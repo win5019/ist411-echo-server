@@ -37,6 +37,9 @@ import java.net.Socket;
  * (5) Await server's response to input.
  * 
  * @author Tyler Suehr
+ * @author Win Ton
+ * @author Steven Weber
+ * @author David Wong
  */
 public final class ClientProgram {
     /* Stores reference to singleton instance in main mem */
