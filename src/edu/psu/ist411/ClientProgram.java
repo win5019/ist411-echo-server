@@ -105,7 +105,7 @@ public final class ClientProgram {
         }
     }
 
-    public static void main(final String[] args) {
+    public static void main(String[] args) {
         try {
             final InetAddress address = InetAddress.getLocalHost();
             ClientProgram.getInstance().connect(address.getHostName(), 8080);
