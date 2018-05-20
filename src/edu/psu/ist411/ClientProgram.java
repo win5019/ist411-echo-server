@@ -28,26 +28,25 @@ import java.net.Socket;
  * <b>Instantiation</b>
  * This is a singleton and a valid instance of this object can be accessed
  * via {@link #getInstance}.
- * 
+ *
  * <b>Basic Flow</b>
  * (1) Connects to server.
  * (2) Awaits response (could be "ERR", so abort).
  * (3) Inquire input from user.
  * (4) Send input to server.
  * (5) Await server's response to input.
- * 
+ *
  * @author Tyler Suehr
  * @author Win Ton
  * @author Steven Weber
  * @author David Wong
  */
 public final class ClientProgram {
-    /* Stores reference to singleton instance in main mem */
+    /** Stores reference to singleton instance in main memory. */
     private static volatile ClientProgram instance;
-    
-    
+
     private ClientProgram() {}
-    
+
     public static ClientProgram getInstance() {
         if (instance == null) {
             synchronized (ClientProgram.class) {
@@ -58,59 +57,60 @@ public final class ClientProgram {
         }
         return instance;
     }
-   
+
     /**
      * Attempts to connect to the server via given host and port.
      * This allows the user of the client program to type in requests
      * to the server to echo (for this project's requirements).
-     * 
-     * @param host of the server
-     * @param port number of the server
+     *
+     * @param host of the server.
+     * @param port number of the server.
      */
     public void connect(final String host, final int port) {
-        // Connect to our server program using auto-closeable resources
-        try (final Socket socket = new Socket(host, port);
-                final PrintWriter out = new PrintWriter(socket.getOutputStream());
-                final BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                final BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in))) {
-            // If our server initially sends error "ERR" then disconnect
-            String resp = in.readLine();
-            if (resp != null && resp.contains("ERR")) {
-                System.out.println(resp);
+        // Connect to our server program using auto-closeable resources.
+        try (
+            final Socket socket = new Socket(host, port);
+            final PrintWriter out = new PrintWriter(socket.getOutputStream());
+            final BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            final BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in))
+        ) {
+            // If our server initially sends error "ERR", then disconnect.
+            String response = in.readLine();
+            if (response != null && response.contains("ERR")) {
+                System.out.println(response);
                 return;
             }
-            
-            // Loop until user of client program quits
-            String stdInput;
+
+            // Loop until user of client program quits.
+            String input;
             while (true) {
-                // Inquire input from user of client program
+                // Inquire input from user of client program.
                 System.out.print("Enter text: ");
-                stdInput = stdIn.readLine();
-                if (stdInput != null && stdInput.equals("quit")) {
+                input = stdIn.readLine();
+                if (input != null && input.equalsIgnoreCase("quit")) {
                     break;
                 }
-                
-                // Send client input to server
-                out.println(stdInput);
+
+                // Send client input to server.
+                out.println(input);
                 out.flush();
-                
-                // Get responses from server until it sends an empty str
-                for (;(resp = in.readLine()) != null && !resp.equals("");) {
-                    System.out.println("Server: " + resp);
+
+                // Get responses from server until it sends an empty string.
+                for (; (response = in.readLine()) != null && !response.equals("");) {
+                    System.out.println("Server: " + response);
                 }
             }
-        } catch (IOException ex) {
-            throw new Error(ex);
+        } catch (final IOException exception) {
+            throw new Error(exception);
         }
     }
-    
-    
-    public static void main(String[] args) {
+
+    public static void main(final String[] args) {
         try {
             final InetAddress address = InetAddress.getLocalHost();
             ClientProgram.getInstance().connect(address.getHostName(), 8080);
-        } catch (IOException ex) {
-            throw new Error(ex);
+        } catch (final IOException exception) {
+            throw new Error(exception);
         }
     }
 }
