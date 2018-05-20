@@ -109,7 +109,6 @@ public final class ServerProgram {
             throw new IllegalStateException("Server already started!");
         }
         mPort = port;
-//        startHandlingClientRequests();
 
         // Reset active client connection count.
         sClientCount = new AtomicInteger(0);
@@ -166,44 +165,6 @@ public final class ServerProgram {
 
     public void setRequestProcessor(final IRequestProcessor processor) {
         mProcessor = processor;
-    }
-
-    @Deprecated
-    private void startHandlingClientRequests() {
-        try {
-            // Set the active client count to 0.
-            sClientCount = new AtomicInteger(0);
-
-            // Instantiate the server's socket. Will be used by this
-            // class to stop the server if #stop() is called.
-            mServerSocket = new ServerSocket(mPort);
-
-            // Update the flags, the server is started and should
-            // be running at this point.
-            mFlags = FLAG_STARTED | FLAG_RUNNING;
-
-            // While running, loop and handle client connections.
-            System.out.println("Waiting for client connection...");
-            while ((mFlags & FLAG_RUNNING) == FLAG_RUNNING) {
-                final Socket clientSocket = mServerSocket.accept();
-                final ThreadPoolExecutor executor = getExecutor();
-
-                // If our server is handling too many clients, then just
-                // reject new ones by sending a pretty message.
-                if (sClientCount.get() >= executor.getMaximumPoolSize()) {
-                    rejectClient(clientSocket);
-                } else {
-                    sClientCount.incrementAndGet();
-                    executor.execute(new ServerWorker(clientSocket, mProcessor));
-                }
-            }
-        } catch (final IOException exception) {
-            exception.printStackTrace();
-
-            // Update flags for serve state
-            mFlags &= ~FLAG_STARTED;
-            mFlags &= ~FLAG_RUNNING;
-        }
     }
 
     /**
@@ -269,7 +230,6 @@ public final class ServerProgram {
         }
         return sExecutor;
     }
-
 
     /**
      * Internal implementation of {@link Runnable} that services requests
@@ -343,7 +303,6 @@ public final class ServerProgram {
         }
     }
 
-
     /**
      * Decouples implementation for processing client requests.
      *
@@ -364,20 +323,12 @@ public final class ServerProgram {
     private static class EchoRequestProcessor implements IRequestProcessor {
         @Override
         public String onProcessRequest(String request) {
-//            // Attempt to recognize request.
-//            request = request.toLowerCase();
-//            if (request.contains("hello")
-//                    || request.contains("hi")
-//                    || request.contains("hey")) {
-//                return "Well hello there!";
-//            }
-
             // Echo request if not recognized.
             return "(Echo) " + request;
         }
     }
 
-    public static void main(final String[] args) {
+    public static void main(String[] args) {
         ServerProgram.getInstance().start(8080);
     }
 }
